@@ -9,7 +9,7 @@
     "node": ">=18"
   },
   "repository": {
-    "url": "https://github.com/AndrewBarba/node-fetch-http2"
+    "url": "https://github.com/AndrewBarba/fetch-http2"
   },
   "files": [
     "dist"
