@@ -1,4 +1,4 @@
-import { ClientHttp2Stream, OutgoingHttpHeaders } from 'node:http2'
+import { ClientHttp2Stream, IncomingHttpHeaders, OutgoingHttpHeaders } from 'node:http2'
 import { _fetch } from './http2'
 
 export type RequestInfo = string | URL
@@ -12,7 +12,7 @@ export interface RequestInit {
 }
 
 export interface Response {
-  readonly headers: OutgoingHttpHeaders
+  readonly headers: IncomingHttpHeaders
   readonly ok: boolean
   readonly status: number
   readonly url: string
