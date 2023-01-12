@@ -4,6 +4,10 @@
 
 ---
 
+## [1.0.3](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.3)
+
+- Default keepAlive of 5s
+
 ## [1.0.2](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.2)
 
 - Fix type of response headers
