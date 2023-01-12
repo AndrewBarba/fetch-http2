@@ -18,6 +18,7 @@
     "fetch",
     "http",
     "https",
+    "http2",
     "promise",
     "request",
     "curl",
