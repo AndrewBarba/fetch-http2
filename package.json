@@ -1,0 +1,28 @@
+{
+  "name": "fetch-http2",
+  "version": "1.0.0",
+  "description": "Native http2 fetch implementation for Node.js",
+  "author": "Andrew Barba <barba@hey.com>",
+  "main": "dist/fetch.js",
+  "types": "dist/fetch.d.ts",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "url": "https://github.com/AndrewBarba/node-fetch-http2"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@tsconfig/node18": "^1.0.1",
+    "@types/node": "^18.11.18",
+    "eslint": "^8.31.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.2",
+    "typescript": "^4.9.4"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  }
+}
