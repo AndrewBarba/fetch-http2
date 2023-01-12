@@ -19,10 +19,10 @@ export interface Response {
 
   readonly body: ClientHttp2Stream
 
-  readonly buffer: () => Promise<Buffer>
-  readonly arrayBuffer: () => Promise<ArrayBuffer>
-  readonly json: () => Promise<unknown>
-  readonly text: () => Promise<string>
+  buffer(): Promise<Buffer>
+  arrayBuffer(): Promise<ArrayBuffer>
+  json<T = any>(): Promise<T>
+  text(): Promise<string>
 }
 
 export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {

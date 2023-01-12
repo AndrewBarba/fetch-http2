@@ -133,7 +133,7 @@ function _responseHeaders(
 
 function _responseBuffer(req: ClientHttp2Stream): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    let chunks: Buffer[] = []
+    const chunks: Buffer[] = []
     req.on('error', reject)
     req.on('data', (chunk: Buffer) => chunks.push(chunk))
     req.on('end', () => resolve(Buffer.concat(chunks)))
