@@ -4,6 +4,6 @@
 
 ---
 
-## [1.0.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.0)
+## [1.0.1](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.1)
 
 - Initial Release
