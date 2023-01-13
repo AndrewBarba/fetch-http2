@@ -3,6 +3,7 @@
   "version": "1.0.5",
   "description": "Native http2 fetch implementation for Node.js",
   "author": "Andrew Barba <barba@hey.com>",
+  "license": "MIT",
   "main": "dist/fetch.js",
   "types": "dist/fetch.d.ts",
   "engines": {
