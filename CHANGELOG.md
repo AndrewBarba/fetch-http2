@@ -4,6 +4,10 @@
 
 ---
 
+## [1.0.5](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.5)
+
+- Support Node.js 16.x
+
 ## [1.0.4](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.4)
 
 - Default keepAlive of 20s
