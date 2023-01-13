@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@tsconfig/node18': ^1.0.1
+  '@tsconfig/node16': ^1.0.3
   '@types/chai': ^4.3.4
   '@types/mocha': ^10.0.1
   '@types/node': ^18.11.18
@@ -17,7 +17,7 @@ specifiers:
   typescript: ^4.9.4
 
 devDependencies:
-  '@tsconfig/node18': 1.0.1
+  '@tsconfig/node16': 1.0.3
   '@types/chai': 4.3.4
   '@types/mocha': 10.0.1
   '@types/node': 18.11.18
@@ -129,10 +129,6 @@ packages:
 
   /@tsconfig/node16/1.0.3:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
-    dev: true
-
-  /@tsconfig/node18/1.0.1:
-    resolution: {integrity: sha512-sNFeK6X2ATlhlvzyH4kKYQlfHXE2f2/wxtB9ClvYXevWpmwkUT7VaSrjIN9E76Qebz8qP5JOJJ9jD3QoD/Z9TA==}
     dev: true
 
   /@types/chai/4.3.4:
