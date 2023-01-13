@@ -23,13 +23,15 @@ interface _FetchOptions {
   keepAlive?: number | boolean
 }
 
+const defaultPingInterval = 20_000
+
 export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchResponse> {
   // Construct url
   const { origin, pathname, search } = url
 
   // Find or create http client
   const client = _httpClient(origin, {
-    keepAlive: options?.keepAlive ?? 5_000
+    pingInterval: parsePingInterval(options?.keepAlive)
   })
 
   // Build http request
@@ -65,10 +67,7 @@ export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchR
 
 const _clientCache: Record<string, ClientHttp2Session | undefined> = {}
 
-function _httpClient(
-  origin: string,
-  options?: { keepAlive?: number | boolean }
-): ClientHttp2Session {
+function _httpClient(origin: string, options: { pingInterval: number }): ClientHttp2Session {
   // Look for cached client
   const cachedClient = _clientCache[origin]
 
@@ -86,9 +85,9 @@ function _httpClient(
   // Setup keep alive
   let timer: NodeJS.Timer | undefined
 
-  // Send a ping every 5s to keep client alive
-  if (typeof options?.keepAlive === 'number') {
-    timer = setInterval(() => client.ping(noop), options.keepAlive).unref()
+  // Send a ping every to keep client alive
+  if (options.pingInterval > 0) {
+    timer = setInterval(() => client.ping(noop), options.pingInterval).unref()
   }
 
   // Create function to destroy client
@@ -147,4 +146,15 @@ function _responseBuffer(req: ClientHttp2Stream): Promise<Buffer> {
 
 function noop() {
   // ignore
+}
+
+function parsePingInterval(keepAlive?: boolean | number): number {
+  switch (typeof keepAlive) {
+    case 'number':
+      return keepAlive
+    case 'boolean':
+      return keepAlive ? defaultPingInterval : 0
+    case 'undefined':
+      return defaultPingInterval
+  }
 }

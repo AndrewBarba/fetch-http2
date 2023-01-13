@@ -4,6 +4,11 @@
 
 ---
 
+## [1.0.4](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.4)
+
+- Default keepAlive of 20s
+- Fix logic when passing `keepAlive: false`
+
 ## [1.0.3](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.0.3)
 
 - Default keepAlive of 5s
