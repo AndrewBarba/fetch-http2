@@ -6,7 +6,7 @@
   "main": "dist/fetch.js",
   "types": "dist/fetch.d.ts",
   "engines": {
-    "node": ">=18"
+    "node": ">=16"
   },
   "repository": {
     "url": "https://github.com/AndrewBarba/fetch-http2"
@@ -28,7 +28,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@tsconfig/node18": "^1.0.1",
+    "@tsconfig/node16": "^1.0.3",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.18",
