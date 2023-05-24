@@ -15,6 +15,7 @@ export interface Response {
   readonly headers: IncomingHttpHeaders
   readonly ok: boolean
   readonly status: number
+  readonly statusText: string
   readonly url: string
 
   readonly body: ClientHttp2Stream
@@ -42,7 +43,8 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
   return {
     headers: res.headers,
     status: res.status,
-    ok: res.status >= 200 && res.status < 400,
+    statusText: res.statusText,
+    ok: res.status >= 200 && res.status < 300,
     url: url.href,
     body: res.body,
     async buffer() {
