@@ -52,9 +52,6 @@ export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchR
     req.write(options.body)
   }
 
-  // Send the request
-  req.end()
-
   // Fetch the headers
   const { headers, status } = await _responseHeaders(req, options)
 
@@ -137,6 +134,9 @@ function _responseHeaders(
         status: Number(headers[constants.HTTP2_HEADER_STATUS])
       })
     )
+
+    // Send the request
+    req.end()
   })
 }
 
