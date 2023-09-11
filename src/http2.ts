@@ -47,13 +47,8 @@ export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchR
     }
   )
 
-  // Write request body if needed
-  if (options?.body) {
-    req.write(options.body)
-  }
-
   // Fetch the headers
-  const { headers, status } = await _responseHeaders(req, options)
+  const { headers, status } = await _sendRequest(req, options)
 
   // Get status text
   const statusText = getStatusText(status)
@@ -119,15 +114,25 @@ function _destroyClient(client: ClientHttp2Session, origin: string) {
   }
 }
 
-function _responseHeaders(
+function _sendRequest(
   req: ClientHttp2Stream,
-  options?: { timeout?: number }
+  options?: _FetchOptions
 ): Promise<{ status: number; headers: IncomingHttpHeaders }> {
   return new Promise((resolve, reject) => {
-    if (options?.timeout) {
+    // Write request body if needed
+    if (options && 'body' in options) {
+      req.write(options.body)
+    }
+
+    // Apply optional timeout
+    if (options && typeof options.timeout === 'number') {
       req.setTimeout(options.timeout, reject)
     }
+
+    // Add error handler
     req.on('error', reject)
+
+    // Listen for response headers
     req.on('response', (headers) =>
       resolve({
         headers,
