@@ -4,6 +4,11 @@
 
 ---
 
+## [1.2.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.2.0)
+
+- Fix potential race condition when sending a request
+- Convert test suite to vitest
+
 ## [1.1.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.1.0)
 
 - Return `statusText`
