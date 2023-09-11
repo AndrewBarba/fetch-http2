@@ -80,7 +80,7 @@ function _httpClient(origin: string, options: { pingInterval: number }): ClientH
   _clientCache[origin] = client
 
   // Setup keep alive
-  let timer: NodeJS.Timer | undefined
+  let timer: NodeJS.Timeout | undefined
 
   // Send a ping every to keep client alive
   if (options.pingInterval > 0) {
