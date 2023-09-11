@@ -4,10 +4,11 @@
 
 ---
 
-## [1.2.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.2.0)
+## [1.2.1](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.2.1)
 
 - Fix potential race condition when sending a request
 - Convert test suite to vitest
+- Fix types on node.js v20
 
 ## [1.1.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.1.0)
 
