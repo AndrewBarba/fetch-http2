@@ -120,7 +120,7 @@ function _sendRequest(
 ): Promise<{ status: number; headers: IncomingHttpHeaders }> {
   return new Promise((resolve, reject) => {
     // Write request body if needed
-    if (options && 'body' in options) {
+    if (options && options.body) {
       req.write(options.body)
     }
 
