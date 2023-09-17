@@ -126,7 +126,10 @@ function _sendRequest(
 
     // Apply optional timeout
     if (options && typeof options.timeout === 'number') {
-      req.setTimeout(options.timeout, reject)
+      req.setTimeout(options.timeout, () => {
+        req.close(constants.NGHTTP2_CANCEL)
+        reject(new Error('Request Timeout'))
+      })
     }
 
     // Add error handler
