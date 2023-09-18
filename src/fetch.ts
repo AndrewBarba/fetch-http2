@@ -1,5 +1,5 @@
 import { ClientHttp2Stream, IncomingHttpHeaders, OutgoingHttpHeaders } from 'node:http2'
-import { _fetch } from './http2'
+import { Http2TimeoutError, http2Fetch } from './http2'
 
 export type RequestInfo = string | URL
 
@@ -26,12 +26,14 @@ export interface Response {
   text(): Promise<string>
 }
 
+export { Http2TimeoutError }
+
 export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
   // Parse input url
   const url = typeof input === 'string' ? new URL(input) : input
 
   // Send http request
-  const res = await _fetch(url, {
+  const res = await http2Fetch(url, {
     method: init?.method,
     headers: init?.headers,
     body: init?.body,

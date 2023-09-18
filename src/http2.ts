@@ -8,7 +8,7 @@ import {
   ClientHttp2Stream
 } from 'node:http2'
 
-interface _FetchResponse {
+interface Http2FetchResponse {
   status: number
   statusText: string
   headers: IncomingHttpHeaders
@@ -16,7 +16,7 @@ interface _FetchResponse {
   buffer: () => Promise<Buffer>
 }
 
-interface _FetchOptions {
+interface Http2FetchOptions {
   method?: string
   headers?: OutgoingHttpHeaders
   body?: string | Buffer
@@ -26,12 +26,21 @@ interface _FetchOptions {
 
 const defaultPingInterval = 20_000
 
-export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchResponse> {
+export class Http2TimeoutError extends Error {
+  code: string | number
+  constructor(message: string) {
+    super(message)
+    this.name = 'TimeoutError'
+    this.code = constants.NGHTTP2_CANCEL
+  }
+}
+
+export async function http2Fetch(url: URL, options?: Http2FetchOptions): Promise<Http2FetchResponse> {
   // Construct url
   const { origin, pathname, search } = url
 
   // Find or create http client
-  const client = _httpClient(origin, {
+  const client = httpClient(origin, {
     pingInterval: parsePingInterval(options?.keepAlive)
   })
 
@@ -48,7 +57,7 @@ export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchR
   )
 
   // Fetch the headers
-  const { headers, status } = await _sendRequest(req, options)
+  const { headers, status } = await sendRequest(req, options)
 
   // Get status text
   const statusText = getStatusText(status)
@@ -58,15 +67,15 @@ export async function _fetch(url: URL, options?: _FetchOptions): Promise<_FetchR
     statusText,
     headers,
     body: req,
-    buffer: () => _responseBuffer(req)
+    buffer: () => responseBuffer(req)
   }
 }
 
-const _clientCache: Record<string, ClientHttp2Session | undefined> = {}
+const clientCache: Record<string, ClientHttp2Session | undefined> = {}
 
-function _httpClient(origin: string, options: { pingInterval: number }): ClientHttp2Session {
+function httpClient(origin: string, options: { pingInterval: number }): ClientHttp2Session {
   // Look for cached client
-  const cachedClient = _clientCache[origin]
+  const cachedClient = clientCache[origin]
 
   // Return cached client if we have one
   if (cachedClient) {
@@ -77,7 +86,7 @@ function _httpClient(origin: string, options: { pingInterval: number }): ClientH
   const client = connect(origin)
 
   // Set client cache
-  _clientCache[origin] = client
+  clientCache[origin] = client
 
   // Setup keep alive
   let timer: NodeJS.Timeout | undefined
@@ -90,7 +99,7 @@ function _httpClient(origin: string, options: { pingInterval: number }): ClientH
   // Create function to destroy client
   const closeClient = () => {
     clearInterval(timer)
-    _destroyClient(client, origin)
+    destroyClient(client, origin)
   }
 
   // Handle client errors
@@ -104,9 +113,9 @@ function _httpClient(origin: string, options: { pingInterval: number }): ClientH
   return client
 }
 
-function _destroyClient(client: ClientHttp2Session, origin: string) {
+function destroyClient(client: ClientHttp2Session, origin: string) {
   // Remove the client from cache
-  _clientCache[origin] = undefined
+  clientCache[origin] = undefined
 
   // Close the client
   if (client.closed !== true) {
@@ -114,9 +123,9 @@ function _destroyClient(client: ClientHttp2Session, origin: string) {
   }
 }
 
-function _sendRequest(
+function sendRequest(
   req: ClientHttp2Stream,
-  options?: _FetchOptions
+  options?: Http2FetchOptions
 ): Promise<{ status: number; headers: IncomingHttpHeaders }> {
   return new Promise((resolve, reject) => {
     // Write request body if needed
@@ -128,7 +137,7 @@ function _sendRequest(
     if (options && typeof options.timeout === 'number') {
       req.setTimeout(options.timeout, () => {
         req.close(constants.NGHTTP2_CANCEL)
-        reject(new Error('Request Timeout'))
+        reject(new Http2TimeoutError(`Request timed out after ${options.timeout}ms`))
       })
     }
 
@@ -148,7 +157,7 @@ function _sendRequest(
   })
 }
 
-function _responseBuffer(req: ClientHttp2Stream): Promise<Buffer> {
+function responseBuffer(req: ClientHttp2Stream): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
     req.on('error', reject)

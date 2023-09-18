@@ -1,5 +1,6 @@
 import { describe, it } from 'vitest'
 import { assert } from 'chai'
+import { constants } from 'node:http2'
 import { fetch } from '../src/fetch'
 
 describe('fetch', () => {
@@ -20,6 +21,7 @@ describe('fetch', () => {
       error = _error
     }
     assert.exists(error)
-    assert.equal(error.message, 'Request Timeout')
+    assert.equal(error.name, 'TimeoutError')
+    assert.equal(error.code, constants.NGHTTP2_CANCEL)
   })
 })
