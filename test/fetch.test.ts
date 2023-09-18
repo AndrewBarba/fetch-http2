@@ -1,6 +1,6 @@
-import { describe, it } from 'vitest'
-import { assert } from 'chai'
 import { constants } from 'node:http2'
+import { assert } from 'chai'
+import { describe, it } from 'vitest'
 import { fetch } from '../src/fetch'
 
 describe('fetch', () => {

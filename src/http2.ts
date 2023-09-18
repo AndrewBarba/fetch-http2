@@ -1,12 +1,12 @@
-import { setInterval, clearInterval } from 'node:timers'
 import {
-  connect,
   constants,
   ClientHttp2Session,
+  ClientHttp2Stream,
   IncomingHttpHeaders,
   OutgoingHttpHeaders,
-  ClientHttp2Stream
+  connect
 } from 'node:http2'
+import { clearInterval, setInterval } from 'node:timers'
 
 interface Http2FetchResponse {
   status: number
@@ -35,7 +35,10 @@ export class Http2TimeoutError extends Error {
   }
 }
 
-export async function http2Fetch(url: URL, options?: Http2FetchOptions): Promise<Http2FetchResponse> {
+export async function http2Fetch(
+  url: URL,
+  options?: Http2FetchOptions
+): Promise<Http2FetchResponse> {
   // Construct url
   const { origin, pathname, search } = url
 
@@ -129,12 +132,12 @@ function sendRequest(
 ): Promise<{ status: number; headers: IncomingHttpHeaders }> {
   return new Promise((resolve, reject) => {
     // Write request body if needed
-    if (options && options.body) {
+    if (options?.body) {
       req.write(options.body)
     }
 
     // Apply optional timeout
-    if (options && typeof options.timeout === 'number') {
+    if (typeof options?.timeout === 'number') {
       req.setTimeout(options.timeout, () => {
         req.close(constants.NGHTTP2_CANCEL)
         reject(new Http2TimeoutError(`Request timed out after ${options.timeout}ms`))
