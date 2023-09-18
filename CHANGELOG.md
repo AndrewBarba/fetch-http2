@@ -4,6 +4,12 @@
 
 ---
 
+## [1.3.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.3.0)
+
+- New strongly typed timeout error
+- Properly implement request timeouts
+- Convert lint to [Biome](https://biomejs.dev)
+
 ## [1.2.1](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.2.1)
 
 - Fix potential race condition when sending a request
