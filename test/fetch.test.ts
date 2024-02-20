@@ -39,6 +39,20 @@ describe('fetch', () => {
     assert.isTrue(res.body.destroyed)
   })
 
+  it('should fetch without keepAlive', async () => {
+    const res = await fetch('https://httpbin.org/json', { keepAlive: false })
+    await res.json()
+    assert.isTrue(res.body.closed)
+    assert.isTrue(res.body.destroyed)
+  })
+
+  it('should fetch with keepAlive', async () => {
+    const res = await fetch('https://httpbin.org/json', { keepAlive: true })
+    await res.json()
+    assert.isFalse(res.body.closed)
+    assert.isFalse(res.body.destroyed)
+  })
+
   it('should fetch concurrently', async () => {
     const url = 'https://whoami.app.swift.cloud'
     const promises: any[] = []

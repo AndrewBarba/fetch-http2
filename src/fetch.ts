@@ -44,6 +44,15 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     timeout: init?.timeout
   })
 
+  // Define unified buffer handler
+  const responseBuffer = async () => {
+    const buf = await res.buffer()
+    if (init?.keepAlive === false) {
+      res.destroy()
+    }
+    return buf
+  }
+
   // Build response
   return {
     headers: res.headers,
@@ -54,19 +63,17 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     body: res.body,
     close: res.close,
     destroy: res.destroy,
-    async buffer() {
-      return res.buffer()
-    },
+    buffer: responseBuffer,
     async arrayBuffer() {
-      const buffer = await res.buffer()
+      const buffer = await responseBuffer()
       return Uint8Array.from(buffer)
     },
     async text() {
-      const buffer = await res.buffer()
+      const buffer = await responseBuffer()
       return buffer.toString('utf8')
     },
     async json() {
-      const buffer = await res.buffer()
+      const buffer = await responseBuffer()
       const text = buffer.toString('utf8')
       return JSON.parse(text)
     }
