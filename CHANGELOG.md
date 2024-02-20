@@ -4,6 +4,12 @@
 
 ---
 
+## [1.4.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.4.0)
+
+1. Add support for `keepAlive: false` which will not cache client instances and close them on each request
+2. Expose `res.close()` to close the underlying request/response
+3. Expose `res.destroy()` the destroy the underlying request/response and the underlying http client
+
 ## [1.3.0](https://github.com/AndrewBarba/fetch-http2/releases/tag/1.3.0)
 
 - New strongly typed timeout error

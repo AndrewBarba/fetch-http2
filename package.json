@@ -1,6 +1,6 @@
 {
   "name": "fetch-http2",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Native http2 fetch implementation for Node.js",
   "author": "Andrew Barba <barba@hey.com>",
   "license": "MIT",
