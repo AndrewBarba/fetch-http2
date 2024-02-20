@@ -12,17 +12,14 @@ describe('fetch', () => {
   })
 
   it('should timeout', async () => {
-    let error
     try {
-      await fetch('https://httpbin.org/json', {
-        timeout: 1
-      })
-    } catch (_error) {
-      error = _error
+      await fetch('https://httpbin.org/json', { timeout: 1 })
+      assert.fail('should have thrown')
+    } catch (error: any) {
+      assert.exists(error)
+      assert.equal(error.name, 'TimeoutError')
+      assert.equal(error.code, constants.NGHTTP2_CANCEL)
     }
-    assert.exists(error)
-    assert.equal(error.name, 'TimeoutError')
-    assert.equal(error.code, constants.NGHTTP2_CANCEL)
   })
 
   it('should fetch and close', async () => {
