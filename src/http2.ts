@@ -9,8 +9,6 @@ import {
 import { clearInterval, setInterval } from 'node:timers'
 
 interface Http2FetchResponse {
-  client: ClientHttp2Session
-  origin: string
   status: number
   statusText: string
   headers: IncomingHttpHeaders
@@ -71,8 +69,6 @@ export async function http2Fetch(
   const statusText = getStatusText(status)
 
   return {
-    client,
-    origin,
     status,
     statusText,
     headers,
