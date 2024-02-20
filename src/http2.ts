@@ -9,11 +9,15 @@ import {
 import { clearInterval, setInterval } from 'node:timers'
 
 interface Http2FetchResponse {
+  client: ClientHttp2Session
+  origin: string
   status: number
   statusText: string
   headers: IncomingHttpHeaders
   body: ClientHttp2Stream
   buffer: () => Promise<Buffer>
+  close: () => void
+  destroy: () => void
 }
 
 interface Http2FetchOptions {
@@ -44,6 +48,7 @@ export async function http2Fetch(
 
   // Find or create http client
   const client = httpClient(origin, {
+    keepAlive: Boolean(options?.keepAlive),
     pingInterval: parsePingInterval(options?.keepAlive)
   })
 
@@ -66,17 +71,33 @@ export async function http2Fetch(
   const statusText = getStatusText(status)
 
   return {
+    client,
+    origin,
     status,
     statusText,
     headers,
     body: req,
-    buffer: () => responseBuffer(req)
+    buffer: () => responseBuffer(req),
+    close: () => {
+      if (req.closed !== true) {
+        req.close()
+      }
+    },
+    destroy: () => {
+      if (req.destroyed !== true) {
+        req.destroy()
+      }
+      destroyClient(client, origin)
+    }
   }
 }
 
 const clientCache: Record<string, ClientHttp2Session | undefined> = {}
 
-function httpClient(origin: string, options: { pingInterval: number }): ClientHttp2Session {
+function httpClient(
+  origin: string,
+  options: { keepAlive: boolean; pingInterval: number }
+): ClientHttp2Session {
   // Look for cached client
   const cachedClient = clientCache[origin]
 
@@ -89,13 +110,15 @@ function httpClient(origin: string, options: { pingInterval: number }): ClientHt
   const client = connect(origin)
 
   // Set client cache
-  clientCache[origin] = client
+  if (options.keepAlive) {
+    clientCache[origin] = client
+  }
 
   // Setup keep alive
   let timer: NodeJS.Timeout | undefined
 
   // Send a ping every to keep client alive
-  if (options.pingInterval > 0) {
+  if (options.keepAlive && options.pingInterval > 0) {
     timer = setInterval(() => client.ping(noop), options.pingInterval).unref()
   }
 
