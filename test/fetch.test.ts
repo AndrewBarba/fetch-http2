@@ -24,4 +24,30 @@ describe('fetch', () => {
     assert.equal(error.name, 'TimeoutError')
     assert.equal(error.code, constants.NGHTTP2_CANCEL)
   })
+
+  it('should fetch and close', async () => {
+    const res = await fetch('https://httpbin.org/json')
+    res.close()
+    assert.isTrue(res.body.closed)
+    assert.isFalse(res.body.destroyed)
+  })
+
+  it('should fetch and destroy', async () => {
+    const res = await fetch('https://httpbin.org/json')
+    res.destroy()
+    assert.isTrue(res.body.closed)
+    assert.isTrue(res.body.destroyed)
+  })
+
+  it('should fetch concurrently', async () => {
+    const url = 'https://whoami.app.swift.cloud'
+    const promises: any[] = []
+    for (let i = 0; i < 100; i++) {
+      promises.push(fetch(url).then((res) => res.json()))
+    }
+    const bodies = await Promise.all(promises)
+    for (const body of bodies) {
+      assert.equal(body.httpVersion, '2')
+    }
+  })
 })
