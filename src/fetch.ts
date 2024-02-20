@@ -7,7 +7,7 @@ export interface RequestInit {
   method?: string
   headers?: OutgoingHttpHeaders
   body?: string | Buffer
-  keepAlive?: number
+  keepAlive?: boolean | number
   timeout?: number
 }
 
@@ -24,6 +24,9 @@ export interface Response {
   arrayBuffer(): Promise<ArrayBuffer>
   json<T = any>(): Promise<T>
   text(): Promise<string>
+
+  close(): void
+  destroy(): void
 }
 
 export { Http2TimeoutError }
@@ -41,6 +44,11 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     timeout: init?.timeout
   })
 
+  // Auto close if keepAlive is false
+  if (init?.keepAlive === false) {
+    res.body.once('end', res.destroy)
+  }
+
   // Build response
   return {
     headers: res.headers,
@@ -49,6 +57,8 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     ok: res.status >= 200 && res.status < 300,
     url: url.href,
     body: res.body,
+    close: res.close,
+    destroy: res.destroy,
     async buffer() {
       return res.buffer()
     },
