@@ -44,13 +44,9 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     timeout: init?.timeout
   })
 
-  // Define unified buffer handler
-  const responseBuffer = async () => {
-    const buf = await res.buffer()
-    if (init?.keepAlive === false) {
-      res.destroy()
-    }
-    return buf
+  // Auto close if keepAlive is false
+  if (init?.keepAlive === false) {
+    res.body.once('end', res.destroy)
   }
 
   // Build response
@@ -63,17 +59,19 @@ export async function fetch(input: RequestInfo, init?: RequestInit): Promise<Res
     body: res.body,
     close: res.close,
     destroy: res.destroy,
-    buffer: responseBuffer,
+    async buffer() {
+      return res.buffer()
+    },
     async arrayBuffer() {
-      const buffer = await responseBuffer()
+      const buffer = await res.buffer()
       return Uint8Array.from(buffer)
     },
     async text() {
-      const buffer = await responseBuffer()
+      const buffer = await res.buffer()
       return buffer.toString('utf8')
     },
     async json() {
-      const buffer = await responseBuffer()
+      const buffer = await res.buffer()
       const text = buffer.toString('utf8')
       return JSON.parse(text)
     }
