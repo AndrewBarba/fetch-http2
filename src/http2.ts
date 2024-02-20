@@ -48,7 +48,7 @@ export async function http2Fetch(
 
   // Find or create http client
   const client = httpClient(origin, {
-    keepAlive: Boolean(options?.keepAlive),
+    keepAlive: options?.keepAlive === false ? false : true,
     pingInterval: parsePingInterval(options?.keepAlive)
   })
 
