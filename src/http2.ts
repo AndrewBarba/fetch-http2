@@ -1,9 +1,9 @@
 import {
   constants,
-  ClientHttp2Session,
-  ClientHttp2Stream,
-  IncomingHttpHeaders,
-  OutgoingHttpHeaders,
+  type ClientHttp2Session,
+  type ClientHttp2Stream,
+  type IncomingHttpHeaders,
+  type OutgoingHttpHeaders,
   connect
 } from 'node:http2'
 import { clearInterval, setInterval } from 'node:timers'
@@ -37,111 +37,110 @@ export class Http2TimeoutError extends Error {
   }
 }
 
-export async function http2Fetch(
-  url: URL,
-  options?: Http2FetchOptions
-): Promise<Http2FetchResponse> {
-  // Construct url
-  const { origin, pathname, search } = url
+export class Http2Client {
+  clientCache: Record<string, ClientHttp2Session | undefined> = {}
 
-  // Find or create http client
-  const client = httpClient(origin, {
-    keepAlive: options?.keepAlive === false ? false : true,
-    pingInterval: parsePingInterval(options?.keepAlive)
-  })
+  async request(url: URL, options?: Http2FetchOptions): Promise<Http2FetchResponse> {
+    // Construct url
+    const { origin, pathname, search } = url
 
-  // Build http request
-  const req = client.request(
-    {
-      ...options?.headers,
-      [constants.HTTP2_HEADER_METHOD]: options?.method ?? 'GET',
-      [constants.HTTP2_HEADER_PATH]: pathname + search
-    },
-    {
-      endStream: !options?.body
-    }
-  )
+    // Find or create http client
+    const client = this.httpClient(origin, {
+      keepAlive: options?.keepAlive !== false,
+      pingInterval: parsePingInterval(options?.keepAlive)
+    })
 
-  // Fetch the headers
-  const { headers, status } = await sendRequest(req, options)
-
-  // Get status text
-  const statusText = getStatusText(status)
-
-  return {
-    status,
-    statusText,
-    headers,
-    body: req,
-    buffer: () => responseBuffer(req),
-    close: () => {
-      if (req.closed !== true) {
-        req.close()
+    // Build http request
+    const req = client.request(
+      {
+        ...options?.headers,
+        [constants.HTTP2_HEADER_METHOD]: options?.method ?? 'GET',
+        [constants.HTTP2_HEADER_PATH]: pathname + search
+      },
+      {
+        endStream: !options?.body
       }
-    },
-    destroy: () => {
-      if (req.destroyed !== true) {
-        req.destroy()
+    )
+
+    // Fetch the headers
+    const { headers, status } = await sendRequest(req, options)
+
+    // Get status text
+    const statusText = getStatusText(status)
+
+    return {
+      status,
+      statusText,
+      headers,
+      body: req,
+      buffer: () => responseBuffer(req),
+      close: () => {
+        if (req.closed !== true) {
+          req.close()
+        }
+      },
+      destroy: () => {
+        if (req.destroyed !== true) {
+          req.destroy()
+        }
+        this.destroy(client, origin)
       }
-      destroyClient(client, origin)
     }
   }
-}
 
-const clientCache: Record<string, ClientHttp2Session | undefined> = {}
+  private httpClient(
+    origin: string,
+    options: { keepAlive: boolean; pingInterval: number }
+  ): ClientHttp2Session {
+    // Look for cached client
+    const cachedClient = this.clientCache[origin]
 
-function httpClient(
-  origin: string,
-  options: { keepAlive: boolean; pingInterval: number }
-): ClientHttp2Session {
-  // Look for cached client
-  const cachedClient = clientCache[origin]
+    // Return cached client if we have one
+    if (cachedClient) {
+      return cachedClient
+    }
 
-  // Return cached client if we have one
-  if (cachedClient) {
-    return cachedClient
+    // Create a new client
+    const client = connect(origin)
+
+    // Set client cache
+    if (options.keepAlive) {
+      this.clientCache[origin] = client
+    }
+
+    // Setup keep alive
+    let timer: NodeJS.Timeout | undefined
+
+    // Send a ping every to keep client alive
+    if (options.keepAlive && options.pingInterval > 0) {
+      timer = setInterval(() => client.ping(noop), options.pingInterval).unref()
+    }
+
+    // Create function to destroy client
+    const closeClient = () => {
+      clearInterval(timer)
+      this.destroy(client, origin)
+    }
+
+    // Handle client errors
+    client.on('close', closeClient)
+    client.on('goaway', closeClient)
+    client.on('error', closeClient)
+    client.on('frameError', closeClient)
+    client.on('timeout', closeClient)
+
+    // Return the client
+    return client
   }
 
-  // Create a new client
-  const client = connect(origin)
+  destroy(client: ClientHttp2Session, origin: string) {
+    // Remove the client from cache
+    this.clientCache[origin] = undefined
 
-  // Set client cache
-  if (options.keepAlive) {
-    clientCache[origin] = client
-  }
-
-  // Setup keep alive
-  let timer: NodeJS.Timeout | undefined
-
-  // Send a ping every to keep client alive
-  if (options.keepAlive && options.pingInterval > 0) {
-    timer = setInterval(() => client.ping(noop), options.pingInterval).unref()
-  }
-
-  // Create function to destroy client
-  const closeClient = () => {
-    clearInterval(timer)
-    destroyClient(client, origin)
-  }
-
-  // Handle client errors
-  client.on('close', closeClient)
-  client.on('goaway', closeClient)
-  client.on('error', closeClient)
-  client.on('frameError', closeClient)
-  client.on('timeout', closeClient)
-
-  // Return the client
-  return client
-}
-
-function destroyClient(client: ClientHttp2Session, origin: string) {
-  // Remove the client from cache
-  clientCache[origin] = undefined
-
-  // Close the client
-  if (client.closed !== true) {
-    client.close()
+    // Close the client
+    if (client.closed !== true) {
+      client.close()
+    }
   }
 }
 
